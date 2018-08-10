@@ -12,14 +12,13 @@ CONFIG_NAME="config.json"
 
 # Store config settings in an associative array
 # Ex: SOURCE_FOR_FILE_A::DESTINATION_FOR_FILE_A,SOURCE_FOR_FILE_B::DESTINATION_FOR_FILE_B
-CONFIG_SETTINGS["DEVWEB"]="$CONTENT/frontend/config-dev.json::client/,$CONTENT/backend/config-dev.json::src/"
-CONFIG_SETTINGS["PRODWEB"]='E:F,G:H'
+CONFIG_SETTINGS["DEVWEB"]="$CONTENT/frontend/dev/config.json::client/,$CONTENT/backend/dev/config.json::src/"
+CONFIG_SETTINGS["PRODWEB"]="$CONTENT/frontend/prod/config.json::client/,$CONTENT/backend/prod/config.json::src/"
 
 # Methods
 configure_configs() 
 {
   SETTING=$1
-  echo $SETTING
   for i in $(echo $SETTING | sed "s/,/ /g")
   do
     CONFIG=$(echo $i | sed "s/::/,/g")
@@ -29,7 +28,7 @@ configure_configs()
     curl -LJO# -H "Authorization: token $GITHUB_API_TOKEN" -H "Accept: application/vnd.github.v3.raw" -O -L ${STRUCTURED_PATHS[0]}
 
     echo "Moving the config into ${STRUCTURED_PATHS[1]} ..."
-    mv config-dev.json ${STRUCTURED_PATHS[1]}/config.dev.json
+    mv $CONFIG_NAME ${STRUCTURED_PATHS[1]}/$CONFIG_NAME
   done
 }
 
