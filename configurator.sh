@@ -4,11 +4,29 @@
 
 declare -A CONFIG_SETTINGS
 
+cat << "EOF"
+  _____ _______          __     _                  _____ ____  _   _ ______ _____ _____ _    _ _____        _______ ____  _____
+ |  __ |_   _\ \        / /\   | |        /\      / ____/ __ \| \ | |  ____|_   _/ ____| |  | |  __ \    /\|__   __/ __ \|  __ \
+ | |  | || |  \ \  /\  / /  \  | |       /  \    | |   | |  | |  \| | |__    | || |  __| |  | | |__) |  /  \  | | | |  | | |__) |
+ | |  | || |   \ \/  \/ / /\ \ | |      / /\ \   | |   | |  | | . ` |  __|   | || | |_ | |  | |  _  /  / /\ \ | | | |  | |  _  /
+ | |__| _| |_   \  /\  / ____ \| |____ / ____ \  | |___| |__| | |\  | |     _| || |__| | |__| | | \ \ / ____ \| | | |__| | | \ \
+ |_____|_____|   \/  \/_/    \_|______/_/    \_\  \_____\____/|_| \_|_|    |_____\_____|\____/|_|  \_/_/    \_|_|  \____/|_|  \_\
+
+
+EOF
+
+# Validate settings.
+echo "Validating Github API token..."
+[ -f .secrets ] && source .secrets
+[ "$GITHUB_API_TOKEN" ] || { echo "Error: Please define GITHUB_API_TOKEN variable." >&2; exit 1; }
+[ "$TRACE" ] && set -x
+
 # Variables
 GH_API="https://api.github.com"
 REPO="$GH_API/repos/Diwala/config-cert-platform"
 CONTENT="$REPO/contents"
 CONFIG_NAME="config.json"
+AUTH="Authorization: token $GITHUB_API_TOKEN"
 
 # Store config settings in an associative array
 # Ex: SOURCE_FOR_FILE_A::DESTINATION_FOR_FILE_A,SOURCE_FOR_FILE_B::DESTINATION_FOR_FILE_B
@@ -65,31 +83,13 @@ key="$1"
   esac
 done
 
-cat << "EOF"
-
-  _____ _______          __     _                  _____ ____  _   _ ______ _____ _____ _    _ _____        _______ ____  _____
- |  __ |_   _\ \        / /\   | |        /\      / ____/ __ \| \ | |  ____|_   _/ ____| |  | |  __ \    /\|__   __/ __ \|  __ \
- | |  | || |  \ \  /\  / /  \  | |       /  \    | |   | |  | |  \| | |__    | || |  __| |  | | |__) |  /  \  | | | |  | | |__) |
- | |  | || |   \ \/  \/ / /\ \ | |      / /\ \   | |   | |  | | . ` |  __|   | || | |_ | |  | |  _  /  / /\ \ | | | |  | |  _  /
- | |__| _| |_   \  /\  / ____ \| |____ / ____ \  | |___| |__| | |\  | |     _| || |__| | |__| | | \ \ / ____ \| | | |__| | | \ \
- |_____|_____|   \/  \/_/    \_|______/_/    \_\  \_____\____/|_| \_|_|    |_____\_____|\____/|_|  \_/_/    \_|_|  \____/|_|  \_\
-
-
-EOF
-
 # Check dependencies.
 set -e
 type curl grep sed tr >&2
 xargs=$(which gxargs || which xargs)
 
-# Validate settings.
-echo "Validating Github API token..."
-[ -f .secrets ] && source .secrets
-[ "$GITHUB_API_TOKEN" ] || { echo "Error: Please define GITHUB_API_TOKEN variable." >&2; exit 1; }
-[ "$TRACE" ] && set -x
-
 # Validate token.
-curl -o /dev/null -sH "$AUTH" $REPO || { echo "Error: Invalid repo, token or network issue!";  exit 1; }
+curl -o /dev/null -sfH "$AUTH" $REPO || { echo "Error: Invalid repo, token or network issue!";  exit 1; }
 
 # Execute confugarator
 CONFIG_SELECTOR=$(echo $ENVIRONMENT$PLATFORM | tr '[a-z]' '[A-Z]')
