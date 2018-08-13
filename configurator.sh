@@ -16,7 +16,7 @@ CONFIG_SETTINGS["DEVWEB"]="$CONTENT/frontend/dev/config.json::client/,$CONTENT/b
 CONFIG_SETTINGS["PRODWEB"]="$CONTENT/frontend/prod/config.json::client/,$CONTENT/backend/prod/config.json::src/"
 
 # Methods
-configure_configs() 
+configure_configs()
 {
   SETTING=$1
   for i in $(echo $SETTING | sed "s/,/ /g")
@@ -40,7 +40,7 @@ no_args()
 }
 
 # handle non-option arguments
-if [ $# -eq "0" ] 
+if [ $# -eq "0" ]
   then
   no_args
 fi
@@ -67,14 +67,14 @@ done
 
 cat << "EOF"
 
-  _____ _______          __     _                  _____ ____  _   _ ______ _____ _____ _    _ _____        _______ ____  _____  
- |  __ |_   _\ \        / /\   | |        /\      / ____/ __ \| \ | |  ____|_   _/ ____| |  | |  __ \    /\|__   __/ __ \|  __ \ 
+  _____ _______          __     _                  _____ ____  _   _ ______ _____ _____ _    _ _____        _______ ____  _____
+ |  __ |_   _\ \        / /\   | |        /\      / ____/ __ \| \ | |  ____|_   _/ ____| |  | |  __ \    /\|__   __/ __ \|  __ \
  | |  | || |  \ \  /\  / /  \  | |       /  \    | |   | |  | |  \| | |__    | || |  __| |  | | |__) |  /  \  | | | |  | | |__) |
- | |  | || |   \ \/  \/ / /\ \ | |      / /\ \   | |   | |  | | . ` |  __|   | || | |_ | |  | |  _  /  / /\ \ | | | |  | |  _  / 
- | |__| _| |_   \  /\  / ____ \| |____ / ____ \  | |___| |__| | |\  | |     _| || |__| | |__| | | \ \ / ____ \| | | |__| | | \ \ 
+ | |  | || |   \ \/  \/ / /\ \ | |      / /\ \   | |   | |  | | . ` |  __|   | || | |_ | |  | |  _  /  / /\ \ | | | |  | |  _  /
+ | |__| _| |_   \  /\  / ____ \| |____ / ____ \  | |___| |__| | |\  | |     _| || |__| | |__| | | \ \ / ____ \| | | |__| | | \ \
  |_____|_____|   \/  \/_/    \_|______/_/    \_\  \_____\____/|_| \_|_|    |_____\_____|\____/|_|  \_/_/    \_|_|  \____/|_|  \_\
-                                                                                                                                 
-                                                                                                                                 
+
+
 EOF
 
 # Check dependencies.
@@ -92,8 +92,8 @@ echo "Validating Github API token..."
 curl -o /dev/null -sH "$AUTH" $REPO || { echo "Error: Invalid repo, token or network issue!";  exit 1; }
 
 # Execute confugarator
-CONFIG_SELECTOR="$ENVIRONMENT$PLATFORM"
-SELECTED_CONFIG=${CONFIG_SETTINGS[${CONFIG_SELECTOR^^}]}
+CONFIG_SELECTOR=$(echo $ENVIRONMENT$PLATFORM | tr '[a-z]' '[A-Z]')
+SELECTED_CONFIG=${CONFIG_SETTINGS[$CONFIG_SELECTOR]}
 
 echo "Starting to configure $PLATFORM configs for $ENVIRONMENT environment..."
 configure_configs $SELECTED_CONFIG
