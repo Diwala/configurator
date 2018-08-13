@@ -2,8 +2,6 @@
 # Script to download configs using GitHub API v3.
 # See: http://stackoverflow.com/a/35688093/55075
 
-declare -A CONFIG_SETTINGS
-
 cat << "EOF"
   _____ _______          __     _                  _____ ____  _   _ ______ _____ _____ _    _ _____        _______ ____  _____
  |  __ |_   _\ \        / /\   | |        /\      / ____/ __ \| \ | |  ____|_   _/ ____| |  | |  __ \    /\|__   __/ __ \|  __ \
@@ -28,10 +26,10 @@ CONTENT="$REPO/contents"
 CONFIG_NAME="config.json"
 AUTH="Authorization: token $GITHUB_API_TOKEN"
 
-# Store config settings in an associative array
+# Store config settings in variables concatenated with environment and platform
 # Ex: SOURCE_FOR_FILE_A::DESTINATION_FOR_FILE_A,SOURCE_FOR_FILE_B::DESTINATION_FOR_FILE_B
-CONFIG_SETTINGS["DEVWEB"]="$CONTENT/frontend/dev/config.json::client/,$CONTENT/backend/dev/config.json::src/"
-CONFIG_SETTINGS["PRODWEB"]="$CONTENT/frontend/prod/config.json::client/,$CONTENT/backend/prod/config.json::src/"
+CONFIG_SETTINGS__DEVWEB="$CONTENT/frontend/dev/config.json::client/,$CONTENT/backend/dev/config.json::src/"
+CONFIG_SETTINGS__PRODWEB="$CONTENT/frontend/prod/config.json::client/,$CONTENT/backend/prod/config.json::src/"
 
 # Methods
 configure_configs()
@@ -93,9 +91,9 @@ curl -o /dev/null -sfH "$AUTH" $REPO || { echo "Error: Invalid repo, token or ne
 
 # Execute confugarator
 CONFIG_SELECTOR=$(echo $ENVIRONMENT$PLATFORM | tr '[a-z]' '[A-Z]')
-SELECTED_CONFIG=${CONFIG_SETTINGS[$CONFIG_SELECTOR]}
+SELECTED_CONFIG=CONFIG_SETTINGS__${CONFIG_SELECTOR}
 
 echo "Starting to configure $PLATFORM configs for $ENVIRONMENT environment..."
-configure_configs $SELECTED_CONFIG
+configure_configs ${!SELECTED_CONFIG}
 
 echo "$0 done." >&2
