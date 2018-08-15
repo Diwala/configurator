@@ -25,6 +25,7 @@ REPO="$GH_API/repos/Diwala/config-cert-platform"
 CONTENT="$REPO/contents"
 CONFIG_NAME="config.json"
 AUTH="Authorization: token $GITHUB_API_TOKEN"
+UNAME=$(uname)
 
 # Store config settings in variables concatenated with environment and platform
 # Ex: SOURCE_FOR_FILE_A::DESTINATION_FOR_FILE_A,SOURCE_FOR_FILE_B::DESTINATION_FOR_FILE_B
@@ -35,6 +36,7 @@ CONFIG_SETTINGS__PRODWEB="$CONTENT/frontend/prod/config.json::client/,$CONTENT/b
 configure_configs()
 {
   SETTING=$1
+  echo "Starting to configure $PLATFORM configs for $ENVIRONMENT environment..."
   for i in $(echo $SETTING | sed "s/,/ /g")
   do
     CONFIG=$(echo $i | sed "s/::/,/g")
@@ -55,9 +57,21 @@ no_args()
   exit 4
 }
 
+configure_local()
+{
+  echo "Configuring config setup to use local environment..."
+  echo "You can change default HOST URL for backend in src/config.json and for frontend in client/config.json."
+  if [ $UNAME = Linux ]; then
+    sed -i '/"HOST"/c\  \"HOST\": \"https:\/\/diwala.serveo.net\",' src/config.json
+    sed -i '/"HOST"/c\  \"HOST\": \"http:\/\/localhost:5000\",' client/config.json
+  else
+    sed -i "" -E '/"HOST"\c; {\"HOST\": $\"https:\/\/diwala.serveo.net\"/,}' src/config.json/
+    sed -i "" -E '/"HOST"\c; {\"HOST\": $\"http:\/\/localhost:5000\"/,}' client/config.json/
+  fi
+}
+
 # handle non-option arguments
-if [ $# -eq "0" ]
-  then
+if [ $# -eq "0" ]; then
   no_args
 fi
 
@@ -93,7 +107,11 @@ curl -o /dev/null -sfH "$AUTH" $REPO || { echo "Error: Invalid repo, token or ne
 CONFIG_SELECTOR=$(echo $ENVIRONMENT$PLATFORM | tr '[a-z]' '[A-Z]')
 SELECTED_CONFIG=CONFIG_SETTINGS__${CONFIG_SELECTOR}
 
-echo "Starting to configure $PLATFORM configs for $ENVIRONMENT environment..."
-configure_configs ${!SELECTED_CONFIG}
+if [ "$CONFIG_SELECTOR" = LOCALWEB ]; then
+  configure_configs $CONFIG_SETTINGS__DEVWEB
+  configure_local
+else
+  configure_configs ${!SELECTED_CONFIG}
+fi
 
 echo "$0 done." >&2
