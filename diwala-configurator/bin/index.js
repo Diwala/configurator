@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 const program = require('commander');
-const colors = require('colors');
 const ora = require('ora');
 const setup = require('../lib/setup');
 const { Environment, Platform, getConfigSettings } = require('../lib/configs');
