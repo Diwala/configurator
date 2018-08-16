@@ -1,0 +1,24 @@
+{
+  "name": "diwala-configurator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Diwala/shell-test.git",
+  "author": "Malith Wijenayake <malithrw@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "colors": "^1.3.1",
+    "commander": "^2.17.1",
+    "dev": "^0.1.3",
+    "lodash": "^4.17.10",
+    "ora": "^3.0.0",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.1",
+    "eslint-plugin-react": "^7.11.1"
+  }
+}
