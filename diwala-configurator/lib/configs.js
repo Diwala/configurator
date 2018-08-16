@@ -30,6 +30,20 @@ const Configurations = [{
     destination: 'src/config.json',
     type: 'backend',
   }],
+},
+{
+  platform: 'web',
+  environment: 'prod',
+  configs: [{
+    source: `${CONTENTS}/frontend/prod/config.json`,
+    destination: 'client/config.json',
+    type: 'frontend',
+  },
+  {
+    source: `${CONTENTS}/backend/prod/config.json`,
+    destination: 'src/config.json',
+    type: 'backend',
+  }],
 }];
 
 /**
