@@ -1,0 +1,7 @@
+# Ignore
+node_modules/
+lib/
+config.json
+
+# Include
+!src/lib
