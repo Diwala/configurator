@@ -28,7 +28,6 @@ export default class Mobile extends Command {
 
   async run() {
     const {args, flags} = this.parse(Mobile)
-    await validateAndPullFile(args.token, <string>flags.environment, Platform.MOBILE)
-
+    await validateAndPullFile(this, args.token, <string>flags.environment, Platform.MOBILE)
   }
 }
