@@ -1,6 +1,5 @@
 const fs = require('fs');
 const axios = require('axios');
-const { REPO } = require('./configs');
 import ServiceError from '../errors/service-error';
 import { ErrorTypes } from '../errors/error-handler';
 import {CLIError} from '@oclif/errors'
@@ -48,41 +47,6 @@ export const validateToken = async (token:string, repo: string) => {
  * @param {String} fileObj.destination Path to store downloaded file
  * @param {String} token Github API token
  */
-const downloadFile = async (configObj: any, token: string) => {
-  const file = fs.createWriteStream(configObj.destination);
-  return new Promise(async (resolve) => {
-    try {
-      const response = await axios({
-        method: 'GET',
-        url: configObj.source,
-        headers: {
-          Authorization: `token ${token}`,
-          Accept: 'application/vnd.github.v3.raw',
-        },
-        responseType: 'stream',
-      });
-      if (response) {
-        response.data.pipe(file);
-        file.on('finish', () => {
-          resolve({ status: 200, message: `Downloaded and saved the ${configObj.type} config into ${configObj.destination}` });
-        }).on('error', () => {
-          resolve({ status: 500, message: `Unable to save the ${configObj.type} config into ${configObj.destination}` });
-        });
-      }
-    } catch (error) {
-      resolve({ status: 500, message: `Unable to download ${configObj.source}` });
-    }
-  });
-};
-
-/**
- * Download given file and store them on disk
- * @param {Object} fileObj File object containing information from where download and where to save
- * @param {String} fileObj.source Path to download file
- * @param {String} fileObj.destination Path to store downloaded file
- * @param {String} token Github API token
- */
-const getConfigs = async (token: string, env: string, repo: string, service: string, branch: string) => {
   initGithubService(token);
 
   return new Promise(async (resolve, reject) => {
