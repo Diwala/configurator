@@ -1,30 +1,35 @@
-const fs = require('fs');
-const axios = require('axios');
-const { REPO } = require('./configs');
+import {
+  initGithubService,
+  getContentFromRepo,
+  getGitTreeFromRepo,
+  getFileFromRepo,
+  validateTokenOnRepo
+} from '../services/github';
+import { checkTypeAndAppropriateThrowCliError } from '../errors/helpers';
+import { GitTreeLeafNode, GitContentsObject } from '../types/interfaces/github';
+import { pipeFiles, initiateStreams } from './fileHandler';
+
+import * as ora  from 'ora';
 
 /**
  * Validate Github API token
  *
  * @param {String} token Github API token
  */
-const validateToken = async (token: string) => {
+export const validateToken = async (token:string, repo: string) => {
+  initGithubService(token);
   try {
-    const response = await axios({
-      method: 'GET',
-      url: REPO,
-      headers: {
-        Authorization: `token ${token}`,
-      },
-    });
-    if (response.status === 200) {
-      return { status: response.status, message: 'Github API token validated!' };
+    const tokenValidateSpinner = ora('Validating Github API token.').start();
+    const response = await validateTokenOnRepo(repo)
+    if(response.status === 200) {
+      tokenValidateSpinner.succeed('Github API token validated!');
+    } else if(response.status === 500){
+      tokenValidateSpinner.fail('Something is wrong');
+    } else {
+      tokenValidateSpinner.fail('Invalid Github API token.');
     }
-    return { status: response.status, message: 'Something isn\'n right! :(' };
   } catch (error) {
-    if (!error.response) {
-      return { status: 500, message: 'Didn not receive a response. Probably a network issue!' };
-    }
-    return { status: error.response.status, message: 'Invalid Github API token.' };
+    checkTypeAndAppropriateThrowCliError(error);
   }
 };
 
@@ -35,34 +40,31 @@ const validateToken = async (token: string) => {
  * @param {String} fileObj.destination Path to store downloaded file
  * @param {String} token Github API token
  */
-const downloadFile = async (configObj: any, token: string) => {
-  const file = fs.createWriteStream(configObj.destination);
-  return new Promise(async (resolve) => {
-    try {
-      const response = await axios({
-        method: 'GET',
-        url: configObj.source,
-        headers: {
-          Authorization: `token ${token}`,
-          Accept: 'application/vnd.github.v3.raw',
-        },
-        responseType: 'stream',
-      });
-      if (response) {
-        response.data.pipe(file);
-        file.on('finish', () => {
-          resolve({ status: 200, message: `Downloaded and saved the ${configObj.type} config into ${configObj.destination}` });
-        }).on('error', () => {
-          resolve({ status: 500, message: `Unable to save the ${configObj.type} config into ${configObj.destination}` });
-        });
-      }
-    } catch (error) {
-      resolve({ status: 500, message: `Unable to download ${configObj.source}` });
-    }
-  });
-};
+export const getConfigs = async (token: string, env: string | undefined, repo: string, service: string, branch?: string) => {
+  initGithubService(token);
+  try {
+    const responseContent = await getContentFromRepo(repo, service, branch);
+    const folder = responseContent.data.find((folder: GitContentsObject)=>{
+      return folder.name === env;
+    })
 
-module.exports = {
-  validateToken,
-  downloadFile,
+    const responseTree = await getGitTreeFromRepo(repo, folder.sha, branch);
+
+    const files = responseTree.data.tree.filter(( treeObject: GitTreeLeafNode ) => {
+      return treeObject.type === 'blob'
+    })
+
+    const status = ora(`Downloading configuration file[s] for ${service}`).start();
+    const resolvedFileStreams = await initiateStreams(files, getFileFromRepo);
+    status.succeed()
+
+    const commanderMessage = (stream: any) => {
+      return ora(`Saving config file to ${stream.path}`).start()
+    }
+    const pipedFilesResponse = await pipeFiles(commanderMessage, resolvedFileStreams);
+    return pipedFilesResponse.every((res: boolean) => res===true)
+
+  } catch (error) {
+    checkTypeAndAppropriateThrowCliError(error);
+  }
 };
