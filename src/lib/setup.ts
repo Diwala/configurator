@@ -51,7 +51,6 @@ export const getConfigs = async (token: string, env: string | undefined, repo: s
     const responseTree = await getGitTreeFromRepo(repo, folder.sha, branch);
 
     const files = responseTree.data.tree.filter(( treeObject: GitTreeLeafNode ) => {
-      console.log(treeObject)
       return treeObject.type === 'blob'
     })
 
@@ -62,7 +61,6 @@ export const getConfigs = async (token: string, env: string | undefined, repo: s
     const commanderMessage = (stream: any) => {
       return ora(`Saving config file to ${stream.path}`).start()
     }
-    console.log(resolvedFileStreams)
     const pipedFilesResponse = await pipeFiles(commanderMessage, resolvedFileStreams);
     return pipedFilesResponse.every((res: boolean) => res===true)
 
