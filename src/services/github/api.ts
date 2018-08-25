@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getContentUrl, getGitTreeUrl, getUrl } from './urls';
+import { getContentUrl, getGitTreeUrl, getRepoUrl, getUrl } from './urls';
 import * as merge from 'merge-deep';
 
 let token = ''
@@ -50,7 +50,7 @@ export const getFile = async (url: string) => {
   }
 }
 
-export const validatedToken = async (repo: string) => {
+export const validateToken = async (repo: string) => {
   try {
     return await request(getRepoUrl.bind(this, repo))
   } catch(e) {

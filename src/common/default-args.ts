@@ -4,6 +4,6 @@ const gitToken = {
   description:'Github API token'
 }
 
-export const defaultArgsWebAndMobile = [
+export const defaultArgs = [
   gitToken
 ]

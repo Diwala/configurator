@@ -28,7 +28,7 @@ const branch = flags.string({
   default: 'master'
 })
 
-export const defaultFlagsWebAndMobile = {
+export const defaultFlags = {
   help: help,
   environment: environment,
   repo: repo,

@@ -15,5 +15,5 @@ export const getRepoUrl = (repo:string) => {
 }
 
 export const getUrl = (url:string) => {
-  return url+'feiell/feil';
+  return url;
 }
