@@ -1,30 +1,19 @@
 import {Command, flags} from '@oclif/command'
 import validateAndPullFile from '../lib/validateAndPullFile';
 import { Platform, Environment } from '../lib/configs';
+import { defaultFlagsWebAndMobile } from '../common/default-flags';
+import { defaultArgsWebAndMobile } from '../common/default-args';
+import { defaultExampleWebAndMobile } from '../common/default-examples';
 
+const type = 'mobile'
 export default class Mobile extends Command {
-  static description = 'this is used by diwala to setup mobile config'
 
-  static examples = [
-    `$ configurator mobile -e dev d589d6c3dc87d0df365110f12ce22d5b37b5awds
-`,
-  ]
+  static description = `this is used by diwala to setup ${type} config`
 
-  static flags = {
-    help: flags.help({char: 'h'}),
-    environment: flags.string({
-      char: 'e',
-      description: 'environment to choose',
-      required: false,
-      default: 'dev'
-    }),
-  }
+  static examples = defaultExampleWebAndMobile(type);
 
-  static args = [{
-    name: 'token',
-    required:true,
-    description:'Github API token'
-  }]
+  static flags = defaultFlagsWebAndMobile;
+  static args = defaultArgsWebAndMobile;
 
   async run() {
     const {args, flags} = this.parse(Mobile)

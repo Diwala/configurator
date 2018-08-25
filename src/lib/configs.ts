@@ -37,7 +37,7 @@ const Configurations:Configurations = {
     dev: {
       configs: [{
         source: `${CONTENTS}/frontend/${Environment.DEV}/config.json`,
-        destination: 'client/config.json',
+        destination: 'client/src/config.json',
       },
       {
         source: `${CONTENTS}/backend/${Environment.DEV}/config.json`,
@@ -47,7 +47,7 @@ const Configurations:Configurations = {
     prod: {
       configs: [{
         source: `${CONTENTS}/frontend/${Environment.PROD}/config.json`,
-        destination: 'client/config.json',
+        destination: 'client/src/config.json',
       },
       {
         source: `${CONTENTS}/backend/${Environment.PROD}/config.json`,
