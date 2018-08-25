@@ -1,5 +1,3 @@
-const fs = require('fs');
-const axios = require('axios');
 import {
   initGithubService,
   getContentFromRepo,
@@ -25,7 +23,7 @@ export const validateToken = async (token:string, repo: string) => {
     if(response.status === 200) {
       tokenValidateSpinner.succeed('Github API token validated!');
     } else if(response.status === 500){
-      tokenValidateSpinner.fail('Somethign is wrong');
+      tokenValidateSpinner.fail('Something is wrong');
     } else {
       tokenValidateSpinner.fail('Invalid Github API token.');
     }

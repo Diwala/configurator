@@ -7,7 +7,7 @@ import { getConfigs, validateToken } from '../lib/setup';
 import * as ora  from 'ora';
 
 export default class Setup extends Command {
-  static description = `this is used by diwala to setup all service configs`;
+  static description = `this is used by to setup all service configs based on a strict github folder structure`;
 
   static examples = defaultExample();
 
@@ -21,8 +21,8 @@ export default class Setup extends Command {
       throw new CLIError('Invalid repo value in flag, see -h for usage')
     }
     try {
-      const valid = await validateToken(args.token, flags.repo);
-      const response = await getConfigs(args.token, flags.environment, flags.repo, flags.service, flags.branch)
+      await validateToken(args.token, flags.repo);
+      await getConfigs(args.token, flags.environment, flags.repo, flags.service, flags.branch)
     } catch(error) {
       throw error
     }
