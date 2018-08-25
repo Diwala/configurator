@@ -10,6 +10,7 @@ import {
   getFileFromRepo,
   validateTokenOnRepo
 } from '../services/github';
+import { pipeFiles, initiateStreams } from './fileHandler';
 
 import * as ora  from 'ora';
 
@@ -61,28 +62,14 @@ export const getConfigs = async (token: string, env: string, repo: string, servi
     })
 
     const status = ora(`Downloading configuration file[s] for ${service}`).start();
-    const fileStreams = files.map(async (file) => {
-      const stream = await getFileFromRepo(file.url);
-      const path = file.path;
-      return { stream, path }
-    })
-
-    const resolvedFileStreams = await Promise.all(fileStreams);
+    const resolvedFileStreams = await initiateStreams(files, getFileFromRepo);
     status.succeed()
 
-    const fileResponse = resolvedFileStreams.map(async (stream) => {
-      const newStatus = ora(`Saving config file to ${stream.path}`).start();
-      try {
-        const response = await pipeFile(stream, service);
-        newStatus.succeed();
-        return response
-      } catch(e) {
-        newStatus.fail(e.message)
-        throw e
-      }
-    })
-    const resolvedFileResponse = await Promise.all(fileResponse);
-
+    const commanderMessage = (stream: any) => {
+      return ora(`Saving config file to ${stream.path}`).start()
+    }
+    const pipedFilesResponse = await pipeFiles(commanderMessage, resolvedFileStreams);
+    return pipedFilesResponse.every((res)=> res===true))
 
   } catch (error) {
     if(error.type === ErrorTypes.Service) {
@@ -93,19 +80,3 @@ export const getConfigs = async (token: string, env: string, repo: string, servi
     }
   }
 };
-
-const pipeFile = async (stream, service) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const file = fs.createWriteStream(stream.path);
-      stream.stream.data.pipe(file);
-      file.on('finish', () => {
-        resolve();
-      }).on('error', (err) => {
-        reject({ status: 500, message: `Unable to save the ${service} config into ${stream.path}` });
-      });
-    } catch(e) {
-      throw e
-    }
-  })
-}
