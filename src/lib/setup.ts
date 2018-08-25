@@ -1,10 +1,15 @@
 const fs = require('fs');
 const axios = require('axios');
 const { REPO } = require('./configs');
-import { gitHub, gitTree, gitContents } from '../common/default-urls';
 import ServiceError from '../errors/service-error';
 import { ErrorTypes } from '../errors/error-handler';
 import {CLIError} from '@oclif/errors'
+import {
+  initGithubService,
+  getContentFromRepo,
+  getGitTreeFromRepo,
+  getFileFromRepo
+} from '../services/github';
 
 /**
  * Validate Github API token
@@ -66,84 +71,6 @@ const downloadFile = async (configObj: any, token: string) => {
   });
 };
 
-const getTreeUrl = (repo: string, sha: string, branch:string) => {
-  return `${gitHub}/${repo}/${gitTree}/${sha}?ref=${branch}&recursive=1`
-}
-
-const getContentUrl = (repo: string, service: string, branch:string) => {
-  return `${gitHub}/${repo}/${gitContents}/${service}?ref=${branch}`
-}
-
-const getContent = async (token: string, repo: string, service: string, branch: string) => {
-  try {
-    const response = await axios({
-      method: 'GET',
-      url: getContentUrl(repo, service, branch),
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3.raw',
-      },
-    });
-    return response
-  } catch(e) {
-    if(e.response.status && e.response.config) {
-      const status = e.response.status
-      const message = `External service to gitContents failed on ${e.config.url}`
-      const error = new ServiceError(e, message, status)
-      throw(error);
-    } else {
-      throw(e)
-    }
-  }
-}
-
-const getGitTree = async (token: string, repo:string, sha: string, branch: string) => {
-  try {
-    const response = await axios({
-      method: 'GET',
-      url: getTreeUrl(repo, sha, branch),
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3.raw',
-      },
-    });
-    return response
-  }catch(e) {
-    if(e.response.status && e.response.config) {
-      const status = e.response.status
-      const message = `External service call to gitTree failed on ${e.config.url}`
-      const error = new ServiceError(e, message, status)
-      throw(error);
-    } else {
-      throw(e)
-    }
-  }
-}
-
-const getTheFile = async (token: string, url: string) => {
-  try {
-    const response = await axios({
-      method: 'GET',
-      url:url,
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3.raw',
-      },
-      responseType: 'stream',
-    });
-    return response
-  }catch(e) {
-    if(e.response.status && e.response.config) {
-      const status = e.response.status
-      const message = `External service call to get file as stream failed on ${e.config.url}`
-      const error = new ServiceError(e, message, status)
-      throw(error);
-    } else {
-      throw(e)
-    }
-  }
-}
-
 /**
  * Download given file and store them on disk
  * @param {Object} fileObj File object containing information from where download and where to save
@@ -152,32 +79,40 @@ const getTheFile = async (token: string, url: string) => {
  * @param {String} token Github API token
  */
 const getConfigs = async (token: string, env: string, repo: string, service: string, branch: string) => {
+  initGithubService(token);
+
   return new Promise(async (resolve, reject) => {
     try {
-      const responseContent = await getContent(token, repo, service, branch)
+      const responseContent = await getContentFromRepo(repo, service, branch);
       const folder = responseContent.data.find((folder)=>{
         return folder.name === env;
       })
 
-      const responseTree = await getGitTree(token, repo, folder.sha, branch);
+      const responseTree = await getGitTreeFromRepo(repo, folder.sha, branch);
       const files = responseTree.data.tree.filter((treeObject) => {
         return treeObject.type === 'blob'
       })
 
-      files.forEach(async (repoFile) => {
-        const file = fs.createWriteStream(repoFile.path);
-        try {
-          const responseFile = await getTheFile(token, repoFile.url)
-          responseFile.data.pipe(file);
-          file.on('finish', () => {
-            console.log('FINISHED')
-          }).on('error', (err) => {
-            console.log('ERRROR')
-          });
-        } catch (e) {
-          console.log(e)
-        }
+      const fileStreams = files.map(async (file) => {
+          const stream = await getFileFromRepo(file.url);
+          const path = file.path.pathss.path;
+          return { stream, path }
+      })
 
+      const resolvedFileStreams = await Promise.all(fileStreams);
+
+      const fileResponse = resolvedFileStreams.forEach((stream) => {
+        try {
+          const file = fs.createWriteStream(stream.path);
+          stream.stream.data.pipe(file);
+          file.on('finish', () => {
+            resolve({ status: 200, message: `Downloaded and saved the ${service} config into ${stream.path}` });
+          }).on('error', (err) => {
+            reject({ status: 500, message: `Unable to save the ${service} config into ${stream.path}` });
+          });
+        } catch(e) {
+          throw e
+        }
       })
     } catch (error) {
       if(error.type === ErrorTypes.Service) {
