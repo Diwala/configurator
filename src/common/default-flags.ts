@@ -4,7 +4,7 @@ const help = flags.help({char: 'h'})
 
 const environment = flags.string({
   char: 'e',
-  description: 'environment to choose',
+  description: 'environment to choose, will use this folder under your choosen service/app',
   required: false,
   default: 'dev'
 })
@@ -16,8 +16,8 @@ const repo = flags.string({
 })
 
 const service = flags.string({
-  char: 's',
-  description: 'The service/app you want to configure',
+  char: 'f',
+  description: 'The folder of the service/app you want fetch configuration',
   required: true
 })
 

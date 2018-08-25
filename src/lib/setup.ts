@@ -67,7 +67,7 @@ const downloadFile = async (configObj: any, token: string) => {
 };
 
 const getTreeUrl = (repo: string, sha: string, branch:string) => {
-  return `${gitHub}/${repo}/${gitTree}/${folder.sha}?ref=${branch}&recursive=1`
+  return `${gitHub}/${repo}/${gitTree}/${sha}?ref=${branch}&recursive=1`
 }
 
 const getContentUrl = (repo: string, service: string, branch:string) => {
@@ -84,7 +84,7 @@ const getContent = async (token: string, repo: string, service: string, branch: 
         Accept: 'application/vnd.github.v3.raw',
       },
     });
-    console.log(response.data)
+    return response
   } catch(e) {
     if(e.response.status && e.response.config) {
       const status = e.response.status
@@ -154,23 +154,13 @@ const getTheFile = async (token: string, url: string) => {
 const getConfigs = async (token: string, env: string, repo: string, service: string, branch: string) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await getContent(token, repo, service, branch)
-      console.log(response)
-      const folder = response.data.find((folder)=>{
+      const responseContent = await getContent(token, repo, service, branch)
+      const folder = responseContent.data.find((folder)=>{
         return folder.name === env;
       })
-      const response2 = await axios({
-        method: 'GET',
-        url: getTreeUrl(repo, folder.sha, branch),
-        headers: {
-          Authorization: `token ${token}`,
-          Accept: 'application/vnd.github.v3.raw',
-        },
-      });
-      console.log(response.data)
-      console.log('------------------------------------------')
-      console.log(response2.data)
-      const files = response2.data.tree.filter((treeObject) => {
+
+      const responseTree = await getGitTree(token, repo, folder.sha, branch);
+      const files = responseTree.data.tree.filter((treeObject) => {
         return treeObject.type === 'blob'
       })
 
