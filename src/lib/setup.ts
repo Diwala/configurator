@@ -116,7 +116,8 @@ const getConfigs = async (token: string, env: string, repo: string, service: str
       })
     } catch (error) {
       if(error.type === ErrorTypes.Service) {
-        reject(new CLIError(`${error.message} with status ${error.status}`))
+        const stack = error.stack.split('\n').slice(1).join('\n');
+        reject(new CLIError(`${error.message} with status ${error.status} with trace ${stack}`))
       } else {
         reject(error)
       }
