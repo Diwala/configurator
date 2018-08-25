@@ -1,8 +1,5 @@
 const fs = require('fs');
 const axios = require('axios');
-import ServiceError from '../errors/service-error';
-import { ErrorTypes } from '../errors/error-handler';
-import {CLIError} from '@oclif/errors'
 import {
   initGithubService,
   getContentFromRepo,
@@ -10,6 +7,7 @@ import {
   getFileFromRepo,
   validateTokenOnRepo
 } from '../services/github';
+import { checkTypeAndAppropriateThrowCliError } from '../errors/helpers'
 import { pipeFiles, initiateStreams } from './fileHandler';
 
 import * as ora  from 'ora';
@@ -32,12 +30,7 @@ export const validateToken = async (token:string, repo: string) => {
       tokenValidateSpinner.fail('Invalid Github API token.');
     }
   } catch (error) {
-    if(error.type === ErrorTypes.Service) {
-      const stack = error.stack.split('\n').slice(1).join('\n');
-      throw new CLIError(`${error.message} with status ${error.status} with trace ${stack}`);
-    } else {
-      throw error
-    }
+    checkTypeAndAppropriateThrowCliError(error);
   }
 };
 
@@ -72,11 +65,6 @@ export const getConfigs = async (token: string, env: string, repo: string, servi
     return pipedFilesResponse.every((res)=> res===true))
 
   } catch (error) {
-    if(error.type === ErrorTypes.Service) {
-      const stack = error.stack.split('\n').slice(1).join('\n');
-      throw new CLIError(`${error.message} with status ${error.status} with trace ${stack}`);
-    } else {
-      throw error
-    }
+    checkTypeAndAppropriateThrowCliError(error);
   }
 };

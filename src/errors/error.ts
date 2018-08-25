@@ -1,9 +1,9 @@
-export class ErrorHandler extends Error {
+export class RootError extends Error {
   constructor(type = ErrorTypes.General, ...params) {
     super(...params);
 
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ErrorHandler);
+      Error.captureStackTrace(this, RootError);
     }
 
     this.type = type;
