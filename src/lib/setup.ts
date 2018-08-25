@@ -60,7 +60,7 @@ export const getConfigs = async (token: string, env: string, repo: string, servi
       return ora(`Saving config file to ${stream.path}`).start()
     }
     const pipedFilesResponse = await pipeFiles(commanderMessage, resolvedFileStreams);
-    return pipedFilesResponse.every((res)=> res===true))
+    return pipedFilesResponse.every((res) => res===true)
 
   } catch (error) {
     checkTypeAndAppropriateThrowCliError(error);
