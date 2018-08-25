@@ -1,12 +1,9 @@
 import {Command, flags} from '@oclif/command'
 import {CLIError} from '@oclif/errors'
-import validateAndPullFile from '../lib/validateAndPullFile';
-import { Platform, Environment } from '../lib/configs';
 import { defaultFlagsWebAndMobile } from '../common/default-flags';
 import { defaultArgsWebAndMobile } from '../common/default-args';
 import { defaultExample } from '../common/default-examples';
 import { getConfigs } from '../lib/setup';
-import { ErrorTypes } from '../errors/error-handler';
 
 const type = 'web'
 
