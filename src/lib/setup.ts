@@ -2,6 +2,9 @@ const fs = require('fs');
 const axios = require('axios');
 const { REPO } = require('./configs');
 import { gitHub, gitTree, gitContents } from '../common/default-urls';
+import ServiceError from '../errors/service-error';
+import { ErrorTypes } from '../errors/error-handler';
+import {CLIError} from '@oclif/errors'
 
 /**
  * Validate Github API token
@@ -82,12 +85,62 @@ const getContent = async (token: string, repo: string, service: string, branch: 
       },
     });
     console.log(response.data)
+  } catch(e) {
+    if(e.response.status && e.response.config) {
+      const status = e.response.status
+      const message = `External service to gitContents failed on ${e.config.url}`
+      const error = new ServiceError(e, message, status)
+      throw(error);
+    } else {
+      throw(e)
+    }
+  }
+}
+
+const getGitTree = async (token: string, repo:string, sha: string, branch: string) => {
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: getTreeUrl(repo, sha, branch),
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3.raw',
+      },
+    });
     return response
   }catch(e) {
-    console.log('contents fail')
-    console.log(e.config.url)
-    console.log(e.toString())
-    throw(e);
+    if(e.response.status && e.response.config) {
+      const status = e.response.status
+      const message = `External service call to gitTree failed on ${e.config.url}`
+      const error = new ServiceError(e, message, status)
+      throw(error);
+    } else {
+      throw(e)
+    }
+  }
+}
+
+const getTheFile = async (token: string, url: string) => {
+  try {
+    const response = await axios({
+      method: 'GET',
+      url:url,
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3.raw',
+      },
+      responseType: 'stream',
+    });
+    return response
+  }catch(e) {
+    if(e.response.status && e.response.config) {
+      const status = e.response.status
+      const message = `External service call to get file as stream failed on ${e.config.url}`
+      const error = new ServiceError(e, message, status)
+      throw(error);
+    } else {
+      throw(e)
+    }
   }
 }
 
@@ -99,7 +152,7 @@ const getContent = async (token: string, repo: string, service: string, branch: 
  * @param {String} token Github API token
  */
 const getConfigs = async (token: string, env: string, repo: string, service: string, branch: string) => {
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const response = await getContent(token, repo, service, branch)
       console.log(response)
@@ -120,38 +173,28 @@ const getConfigs = async (token: string, env: string, repo: string, service: str
       const files = response2.data.tree.filter((treeObject) => {
         return treeObject.type === 'blob'
       })
-      console.log(files);
 
-      // files.forEach(async (skyfile) => {
-      //   const file = fs.createWriteStream(skyfile.path);
-      //   try {
-      //     const response3 = await axios({
-      //       method: 'GET',
-      //       // url: `https://api.github.com/repos/Diwala/config-cert-platform/contents/web_platform/${skyfile.path}?ref=config-improvement`,
-      //       url:skyfile.url,
-      //       headers: {
-      //         Authorization: `token ${token}`,
-      //         Accept: 'application/vnd.github.v3.raw',
-      //       },
-      //       responseType: 'stream',
-      //     });
-      //     if (response3) {
-      //       response3.data.pipe(file);
-      //       file.on('finish', () => {
-      //         console.log('FINISHED')
-      //       }).on('error', (err) => {
-      //         console.log('ERRROR')
-      //       });
-      //     };
-      //   } catch (e) {
-      //     console.log(e)
-      //   }
+      files.forEach(async (repoFile) => {
+        const file = fs.createWriteStream(repoFile.path);
+        try {
+          const responseFile = await getTheFile(token, repoFile.url)
+          responseFile.data.pipe(file);
+          file.on('finish', () => {
+            console.log('FINISHED')
+          }).on('error', (err) => {
+            console.log('ERRROR')
+          });
+        } catch (e) {
+          console.log(e)
+        }
 
-      // })
+      })
     } catch (error) {
-      console.log(error.config.url)
-      console.log(error.toString())
-      // resolve({ status: 500, message: `Unable to download ${configObj.source}` });
+      if(error.type === ErrorTypes.Service) {
+        reject(new CLIError(`${error.message} with status ${error.status}`))
+      } else {
+        reject(error)
+      }
     }
   });
 };
