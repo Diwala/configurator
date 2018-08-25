@@ -17,11 +17,11 @@ This is a all purpose configurator for node &amp; javascript apps
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g configurator
+$ npm install -g @diwala/configurator
 $ configurator COMMAND
 running command...
 $ configurator (-v|--version|version)
-configurator/0.1.0 darwin-x64 node-v9.10.0
+@diwala/configurator/0.1.0 darwin-x64 node-v9.10.0
 $ configurator --help [COMMAND]
 USAGE
   $ configurator COMMAND

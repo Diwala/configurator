@@ -1,5 +1,5 @@
 {
-  "name": "configurator",
+  "name": "@diwala/configurator",
   "description": "This is a all purpose configurator for node & javascript apps",
   "version": "0.1.0",
   "author": "Snorre lothar von Gohren Edwin @vongohren, Malith Wijenayake",
