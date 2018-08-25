@@ -1,4 +1,4 @@
-import { getContent, getGitTree, getFile, setToken } from './api'
+import { getContent, getGitTree, getFile, setToken, validateToken } from './api'
 import ServiceError from '../../errors/service-error';
 
 const parseError = (e: Error, message: string) => {
@@ -37,5 +37,13 @@ export const getFileFromRepo = async (url: string) => {
     return await getFile(url);
   } catch(e) {
     throw parseError(e, `External service call to get file as stream failed on`);
+  }
+}
+
+export const validateTokenOnRepo = async (repo: string) => {
+  try {
+    return await validateToken(repo);
+  } catch(e) {
+    throw parseError(e, `Token invalid`);
   }
 }

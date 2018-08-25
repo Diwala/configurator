@@ -8,32 +8,36 @@ import {
   initGithubService,
   getContentFromRepo,
   getGitTreeFromRepo,
-  getFileFromRepo
+  getFileFromRepo,
+  validateTokenOnRepo
 } from '../services/github';
+
+import * as ora  from 'ora';
 
 /**
  * Validate Github API token
  *
  * @param {String} token Github API token
  */
-const validateToken = async (token: string) => {
+export const validateToken = async (token:string, repo: string) => {
+  initGithubService(token);
   try {
-    const response = await axios({
-      method: 'GET',
-      url: REPO,
-      headers: {
-        Authorization: `token ${token}`,
-      },
-    });
-    if (response.status === 200) {
-      return { status: response.status, message: 'Github API token validated!' };
+    const tokenValidateSpinner = ora('Validating Github API token.').start();
+    const response = await validateTokenOnRepo(repo)
+    if(response.status === 200) {
+      tokenValidateSpinner.succeed('Github API token validated!');
+    } else if(response.status === 500){
+      tokenValidateSpinner.fail('Somethign is wrong');
+    } else {
+      tokenValidateSpinner.fail('Invalid Github API token.');
     }
-    return { status: response.status, message: 'Something isn\'n right! :(' };
   } catch (error) {
-    if (!error.response) {
-      return { status: 500, message: 'Didn not receive a response. Probably a network issue!' };
+    if(error.type === ErrorTypes.Service) {
+      const stack = error.stack.split('\n').slice(1).join('\n');
+      throw new CLIError(`${error.message} with status ${error.status} with trace ${stack}`);
+    } else {
+      throw error
     }
-    return { status: error.response.status, message: 'Invalid Github API token.' };
   }
 };
 
