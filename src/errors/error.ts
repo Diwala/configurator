@@ -1,5 +1,6 @@
 export class RootError extends Error {
-  constructor(type = ErrorTypes.General, ...params) {
+  type: string;
+  constructor(type = ErrorTypes.General, ...params:any[]) {
     super(...params);
 
     if (Error.captureStackTrace) {

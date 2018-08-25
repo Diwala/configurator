@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getContentUrl, getGitTreeUrl, getRepoUrl, getUrl } from './urls';
-import * as merge from 'merge-deep';
+import { merge } from 'lodash';
 
 let token = ''
 
@@ -20,17 +20,17 @@ const request = async (extractUrlMethod: any, options?: any) => {
   return await axios(mergedOptions);
 }
 
-export const getContent = async (repo: string, service: string, branch: string) => {
+export const getContent = async (repo: string, service: string, branch?: string) => {
   try {
-    return await request(getContentUrl.bind(this, repo, service, branch))
+    return await request(() => getContentUrl(repo, service, branch))
   } catch(e) {
     throw e
   }
 }
 
-export const getGitTree = async (repo: string, sha: string, branch:string) => {
+export const getGitTree = async (repo: string, sha: string, branch?:string) => {
   try {
-    return await request(getGitTreeUrl.bind(this, repo, sha, branch))
+    return await request(() => getGitTreeUrl(repo, sha, branch))
   } catch(e) {
     throw e
   }
@@ -44,7 +44,7 @@ export const getFile = async (url: string) => {
         Accept: 'application/vnd.github.v3.raw'
       }
     }
-    return await request(getUrl.bind(this, url), requestParameters)
+    return await request(() => getUrl(url), requestParameters)
   } catch(e) {
     throw e
   }
@@ -52,7 +52,7 @@ export const getFile = async (url: string) => {
 
 export const validateToken = async (repo: string) => {
   try {
-    return await request(getRepoUrl.bind(this, repo))
+    return await request(() => getRepoUrl(repo))
   } catch(e) {
     throw e
   }

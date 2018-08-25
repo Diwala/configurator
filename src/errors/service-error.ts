@@ -1,7 +1,8 @@
 import { RootError, ErrorTypes } from './error'
 
 export default class ServiceError extends RootError {
-  constructor(err, readableMessage = null, status = 500) {
+  status: number;
+  constructor(err: Error, readableMessage = '', status = 500) {
     super(ErrorTypes.Service, readableMessage);
 
     if (Error.captureStackTrace) {

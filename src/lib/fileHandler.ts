@@ -1,8 +1,10 @@
 import { AxiosResponse } from 'axios';
+import { Stream } from '../types/interfaces/stream';
+import { GitTreeLeafNode } from '../types/interfaces/github';
 import * as fs from 'fs';
 
-export const initiateStreams = async (files, streamGetterFunc) => {
-  const fileStreams = files.map(async (file) => {
+export const initiateStreams = async (files: GitTreeLeafNode[], streamGetterFunc:Function) => {
+  const fileStreams = files.map(async (file: GitTreeLeafNode) => {
     const stream = await streamGetterFunc(file.url);
     const path = file.path;
     return { stream, path }
@@ -11,7 +13,7 @@ export const initiateStreams = async (files, streamGetterFunc) => {
   return await Promise.all(fileStreams);
 }
 
-export const pipeFiles = async (commanderFeedback, resolvedFileStreams) => {
+export const pipeFiles = async (commanderFeedback:Function, resolvedFileStreams: any):Promise<boolean[]> => {
   const filePromises = resolvedFileStreams.map(async (stream: Stream) => {
     const status = commanderFeedback(stream);
     try {
@@ -23,7 +25,7 @@ export const pipeFiles = async (commanderFeedback, resolvedFileStreams) => {
       throw e
     }
   })
-  return await Promise.all(filePromises);
+  return await Promise.all<boolean>(filePromises);
 }
 
 const pipeFile = ({stream, path}: Stream) => {

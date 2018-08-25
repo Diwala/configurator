@@ -2,11 +2,11 @@ const gitHub = 'https://api.github.com/repos';
 const gitTree = 'git/trees';
 const gitContents = 'contents';
 
-export const getContentUrl = (repo: string, service: string, branch:string) => {
+export const getContentUrl = (repo: string, service: string, branch?:string) => {
   return `${gitHub}/${repo}/${gitContents}/${service}?ref=${branch}`
 }
 
-export const getGitTreeUrl = (repo: string, sha: string, branch:string) => {
+export const getGitTreeUrl = (repo: string, sha: string, branch?:string) => {
   return `${gitHub}/${repo}/${gitTree}/${sha}?ref=${branch}&recursive=1`
 }
 

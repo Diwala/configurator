@@ -5,7 +5,8 @@ import {
   getFileFromRepo,
   validateTokenOnRepo
 } from '../services/github';
-import { checkTypeAndAppropriateThrowCliError } from '../errors/helpers'
+import { checkTypeAndAppropriateThrowCliError } from '../errors/helpers';
+import { GitTreeLeafNode, GitContentsObject } from '../types/interfaces/github';
 import { pipeFiles, initiateStreams } from './fileHandler';
 
 import * as ora  from 'ora';
@@ -39,16 +40,18 @@ export const validateToken = async (token:string, repo: string) => {
  * @param {String} fileObj.destination Path to store downloaded file
  * @param {String} token Github API token
  */
-export const getConfigs = async (token: string, env: string, repo: string, service: string, branch: string) => {
+export const getConfigs = async (token: string, env: string | undefined, repo: string, service: string, branch?: string) => {
   initGithubService(token);
   try {
     const responseContent = await getContentFromRepo(repo, service, branch);
-    const folder = responseContent.data.find((folder)=>{
+    const folder = responseContent.data.find((folder: GitContentsObject)=>{
       return folder.name === env;
     })
 
     const responseTree = await getGitTreeFromRepo(repo, folder.sha, branch);
-    const files = responseTree.data.tree.filter((treeObject) => {
+
+    const files = responseTree.data.tree.filter(( treeObject: GitTreeLeafNode ) => {
+      console.log(treeObject)
       return treeObject.type === 'blob'
     })
 
@@ -59,8 +62,9 @@ export const getConfigs = async (token: string, env: string, repo: string, servi
     const commanderMessage = (stream: any) => {
       return ora(`Saving config file to ${stream.path}`).start()
     }
+    console.log(resolvedFileStreams)
     const pipedFilesResponse = await pipeFiles(commanderMessage, resolvedFileStreams);
-    return pipedFilesResponse.every((res) => res===true)
+    return pipedFilesResponse.every((res: boolean) => res===true)
 
   } catch (error) {
     checkTypeAndAppropriateThrowCliError(error);
