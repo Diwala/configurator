@@ -3,14 +3,14 @@ import validateAndPullFile from '../lib/validateAndPullFile';
 import { Platform, Environment } from '../lib/configs';
 import { defaultFlagsWebAndMobile } from '../common/default-flags';
 import { defaultArgsWebAndMobile } from '../common/default-args';
-import { defaultExampleWebAndMobile } from '../common/default-examples';
+import { defaultExample } from '../common/default-examples';
 
 const type = 'web'
 
 export default class Web extends Command {
   static description = `this is used by diwala to setup ${type} platform config`;
 
-  static examples = defaultExampleWebAndMobile(type);
+  static examples = defaultExample();
 
   static flags = defaultFlagsWebAndMobile;
   static args = defaultArgsWebAndMobile;
