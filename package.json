@@ -60,7 +60,7 @@
     "prepare": "rm -rf lib && tsc",
     "test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md",
-    "command": "./bin/run setup" 
+    "command": "./bin/run setup"
   },
   "types": "lib/index.d.ts"
 }

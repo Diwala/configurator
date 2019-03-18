@@ -21,7 +21,7 @@ $ npm install -g @diwala/configurator
 $ configurator COMMAND
 running command...
 $ configurator (-v|--version|version)
-@diwala/configurator/0.1.0 darwin-x64 node-v9.10.0
+@diwala/configurator/0.1.1 darwin-x64 node-v9.10.0
 $ configurator --help [COMMAND]
 USAGE
   $ configurator COMMAND
@@ -80,5 +80,5 @@ EXAMPLES
   PS. make sure to write the repo correctly
 ```
 
-_See code: [src/commands/setup.ts](https://github.com/Diwala/configurator/blob/v0.1.0/src/commands/setup.ts)_
+_See code: [src/commands/setup.ts](https://github.com/Diwala/configurator/blob/v0.1.1/src/commands/setup.ts)_
 <!-- commandsstop -->
