@@ -1,7 +1,7 @@
 {
   "name": "@diwala/configurator",
   "description": "This is a all purpose configurator for node & javascript apps",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Snorre lothar von Gohren Edwin @vongohren, Malith Wijenayake",
   "bin": {
     "configurator": "./bin/run"

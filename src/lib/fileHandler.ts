@@ -3,6 +3,8 @@ import { Stream } from '../types/interfaces/stream';
 import { GitTreeLeafNode } from '../types/interfaces/github';
 import * as fs from 'fs';
 
+const noFileOrDirectoryFound = 'ENOENT';
+
 export const initiateStreams = async (files: GitTreeLeafNode[], streamGetterFunc:Function) => {
   const fileStreams = files.map(async (file: GitTreeLeafNode) => {
     const stream = await streamGetterFunc(file.url);
@@ -21,8 +23,13 @@ export const pipeFiles = async (commanderFeedback:Function, resolvedFileStreams:
       status.succeed();
       return response
     } catch(e) {
-      status.fail(e.message)
-      throw e
+      if(e.code === noFileOrDirectoryFound) {
+        status.info(`Ignoring ${stream.path}, because cant find folders for location`);
+        return {}
+      } else {
+        status.fail(e.message);
+        throw e;
+      }
     }
   })
   return await Promise.all<boolean>(filePromises);
