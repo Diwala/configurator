@@ -11,7 +11,7 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "lodash": "^4.17.10",
     "ora": "^3.0.0",
     "tslib": "^1"
